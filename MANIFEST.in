@@ -1,0 +1,3 @@
+include README.rst
+include LICENSE
+include src/plasmid_verification/_version.py
