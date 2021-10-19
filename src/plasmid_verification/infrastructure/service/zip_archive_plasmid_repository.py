@@ -17,6 +17,7 @@
 
 
 import zipfile
+from io import TextIOWrapper
 from pathlib import Path
 from typing import Optional
 
@@ -35,7 +36,9 @@ class ZipArchivePlasmidRepository(PlasmidRepository):
         super().__init__(**kwargs)
         self._plasmids = {
             path.stem: Plasmid.from_genbank(
-                SeqIO.read(archive.open(str(path)), format="genbank")
+                SeqIO.read(
+                    TextIOWrapper(archive.open(str(path), mode="r")), format="genbank"
+                )
             )
             for path in (Path(filename) for filename in archive.namelist())
             if path.suffix in self._VALID_EXTENSIONS
