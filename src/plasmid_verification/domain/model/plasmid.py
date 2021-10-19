@@ -62,6 +62,10 @@ class Plasmid:
             annotation=record.annotations,
         )
 
+    def __len__(self) -> int:
+        """"""
+        return len(self.sequence)
+
     @property
     def identifier(self) -> str:
         """Return the plasmid's identifier."""

@@ -44,6 +44,10 @@ class Sample:
             phred_quality=record.letter_annotations["phred_quality"],
         )
 
+    def __len__(self) -> int:
+        """"""
+        return len(self.sequence)
+
     @property
     def identifier(self) -> str:
         """Return the sample's identifier."""
@@ -58,7 +62,3 @@ class Sample:
     def phred_quality(self) -> np.ndarray:
         """Return the Phred quality scores for all sequence positions."""
         return self._phred_quality.copy()
-
-    def __len__(self) -> int:
-        """"""
-        return len(self.sequence)

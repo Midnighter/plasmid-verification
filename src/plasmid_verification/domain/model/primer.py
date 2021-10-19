@@ -34,6 +34,10 @@ class Primer:
         """"""
         return cls(identifier=record.id, sequence=record.seq)
 
+    def __len__(self) -> int:
+        """"""
+        return len(self.sequence)
+
     @property
     def identifier(self) -> str:
         """Return the primer's identifier."""
