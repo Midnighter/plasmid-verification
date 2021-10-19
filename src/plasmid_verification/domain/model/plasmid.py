@@ -18,19 +18,11 @@
 
 from __future__ import annotations
 
-import logging
-from typing import Dict, Iterable, List, Type
+from typing import Dict, Iterable, List
 
 from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
-
-from .sample import Sample
-from .sequence_alignment import CIGAROperation
-from ..service import SampleTrimmingService, SequenceAlignmentService
-
-
-logger = logging.getLogger(__name__)
 
 
 class Plasmid:
@@ -102,64 +94,3 @@ class Plasmid:
             )
         )
         self._features.sort(key=lambda f: (f.location.start, f.location.end))
-
-    def verify(
-        self,
-        sample: Sample,
-        trimming_service: Type[SampleTrimmingService],
-        alignment_service: Type[SequenceAlignmentService],
-        **kwargs,
-    ) -> None:
-        """"""
-        trimmed = trimming_service.trim(sample, **kwargs)
-        alignment = alignment_service.align(
-            query=trimmed.sequence, target=self.sequence, **kwargs
-        )
-        # reverse = alignment_service.align(
-        #     query=trimmed.sequence.reverse_complement(),
-        #     target=self.sequence,
-        #     **kwargs,
-        # )
-        if False:
-            # if reverse.identity > alignment.identity:
-            alignment = reverse
-            strand = -1
-            note = (
-                f"Alignment of reverse complement of trimmed sample "
-                f"{sample.identifier} to plasmid {self.identifier}."
-            )
-        else:
-            strand = 1
-            note = (
-                f"Alignment of trimmed sample {sample.identifier} to plasmid "
-                f"{self.identifier}."
-            )
-        logger.info(
-            "Add sample from %d to %d.", alignment.target_begin, alignment.target_end
-        )
-        self.add_feature(
-            alignment.target_begin,
-            alignment.target_end,
-            type="misc_feature",
-            strand=strand,
-            qualifiers={
-                "label": f"Verified by {sample.identifier}",
-                "note": note,
-            },
-        )
-        index = alignment.target_begin
-        for num, code in alignment.iter_cigar():
-            if code is CIGAROperation.match:
-                index += num
-                continue
-            logger.info("Add conflict from %d to %d.", index, index + num)
-            self.add_feature(
-                index,
-                index + num,
-                type="conflict",
-                strand=strand,
-                qualifiers={
-                    "label": str(code.value),
-                },
-            )
-            index += num

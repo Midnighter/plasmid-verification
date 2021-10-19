@@ -34,6 +34,10 @@ class Sample:
         self._identifier = identifier
         self._sequence = sequence
         self._phred_quality = np.asarray(phred_quality)
+        assert len(self._sequence) == len(self._phred_quality), (
+            f"The sample's ({identifier}) sequence must have a Phred quality score for "
+            f"each position."
+        )
 
     @classmethod
     def from_ab1(cls, record: SeqRecord) -> Sample:
