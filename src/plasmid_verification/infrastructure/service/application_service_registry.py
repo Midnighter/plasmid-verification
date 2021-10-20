@@ -14,7 +14,7 @@
 
 
 import zipfile
-from typing import Optional
+from typing import Optional, Type
 
 from plasmid_verification.application.service import SampleReportService
 from .domain_registry import DomainRegistry
