@@ -14,23 +14,20 @@
 
 
 import zipfile
-from typing import Optional, Type
+from typing import Optional
 
-from plasmid_verification.application.service import SampleReportService
+from plasmid_verification.application.service import PlasmidReportService
+
 from .domain_registry import DomainRegistry
 
 
 class ApplicationServiceRegistry:
-    def __init__(self, domain_registry: Type[DomainRegistry], **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.domain_registry = domain_registry
-
-    def sample_report_service(
-        self, archive: Optional[zipfile.ZipFile] = None
-    ) -> SampleReportService:
-        return SampleReportService(
-            plasmid_repository=self.domain_registry.plasmid_repository(archive=archive),
-            sample_repository=self.domain_registry.sample_repository(archive=archive),
-            trimming_service=self.domain_registry.sample_trimming_service(),
-            alignment_service=self.domain_registry.sequence_alignment_service(),
+    @classmethod
+    def plasmid_report_service(
+        cls, archive: Optional[zipfile.ZipFile] = None
+    ) -> PlasmidReportService:
+        return PlasmidReportService(
+            plasmid_repository=DomainRegistry.plasmid_repository(archive=archive),
+            sample_repository=DomainRegistry.sample_repository(archive=archive),
+            alignment_service=DomainRegistry.sequence_alignment_service(),
         )

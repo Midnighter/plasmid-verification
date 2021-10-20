@@ -17,10 +17,8 @@ import zipfile
 from typing import Optional, Type
 
 from plasmid_verification.domain.model import PlasmidRepository, SampleRepository
-from plasmid_verification.domain.service import (
-    SampleTrimmingService,
-    SequenceAlignmentService,
-)
+from plasmid_verification.domain.service import SequenceAlignmentService
+
 from .zip_archive_plasmid_repository import ZipArchivePlasmidRepository
 from .zip_archive_sample_repository import ZipArchiveSampleRepository
 
@@ -45,12 +43,6 @@ class DomainRegistry:
                 "Currently, no other sample repository format is supported."
             )
         return ZipArchiveSampleRepository(archive=archive)
-
-    @classmethod
-    def sample_trimming_service(cls) -> Type[SampleTrimmingService]:
-        from .quality_sample_trimming_service import QualitySampleTrimmingService
-
-        return QualitySampleTrimmingService
 
     @classmethod
     def sequence_alignment_service(cls) -> Type[SequenceAlignmentService]:

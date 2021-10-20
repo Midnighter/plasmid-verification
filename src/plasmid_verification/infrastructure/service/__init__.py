@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-from .quality_sample_trimming_service import QualitySampleTrimmingService
 from .zip_archive_sample_repository import ZipArchiveSampleRepository
 from .zip_archive_primer_repository import ZipArchivePrimerRepository
 from .zip_archive_plasmid_repository import ZipArchivePlasmidRepository

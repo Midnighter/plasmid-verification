@@ -19,7 +19,7 @@
 import enum
 import re
 from dataclasses import dataclass
-from typing import Iterable, ClassVar, Pattern, Tuple
+from typing import ClassVar, Iterable, Pattern, Tuple
 
 from Bio.Seq import Seq
 
@@ -67,3 +67,7 @@ class SequenceAlignment:
         return sum(
             num for num, code in self.iter_cigar() if code is CIGAROperation.match
         ) / min(len(self.query_sequence), len(self.target_sequence))
+
+    def query_location(self, target_location: int) -> int:
+        assert self.target_begin <= target_location <= self.target_end
+        return self.query_begin + target_location - self.target_begin

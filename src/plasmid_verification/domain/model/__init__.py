@@ -20,3 +20,11 @@ from .primer import Primer
 from .primer_repository import PrimerRepository
 from .plasmid import Plasmid
 from .plasmid_repository import PlasmidRepository
+from .sample_report import (
+    Conflict,
+    ConflictReliability,
+    ConflictType,
+    ConflictStatus,
+    SampleReport,
+)
+from .plasmid_report import PlasmidReport

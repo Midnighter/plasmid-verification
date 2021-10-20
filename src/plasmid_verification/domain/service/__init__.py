@@ -14,4 +14,5 @@
 
 
 from .sequence_alignment_service import SequenceAlignmentService
-from .sample_trimming_service import SampleTrimmingService
+from .sample_report_builder import SampleReportBuilder
+from .plasmid_report_builder import PlasmidReportBuilder

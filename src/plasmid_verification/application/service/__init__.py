@@ -13,4 +13,4 @@
 # limitations under the License.
 
 
-from .sample_report_service import SampleReportService
+from .plasmid_report_service import PlasmidReportService
