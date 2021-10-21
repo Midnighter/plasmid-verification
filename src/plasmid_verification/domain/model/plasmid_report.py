@@ -54,6 +54,7 @@ class PlasmidReport:
                 continue
             if not self.do_feature_and_conflict_overlap(feature, conflict):
                 continue
+            # TODO: Migrate code from sanger-sequencing.
 
     @classmethod
     def do_feature_and_conflict_overlap(

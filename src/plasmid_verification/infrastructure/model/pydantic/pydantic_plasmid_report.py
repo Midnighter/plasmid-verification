@@ -15,13 +15,15 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from io import StringIO
 from typing import List
 
 from Bio import SeqIO
 from pydantic import Field
 
-from plasmid_verification.domain.model import PlasmidReport
+from plasmid_verification.domain.model import ConflictStatus, PlasmidReport
+
 from .pydantic_custom_base import PydanticCustomBase
 from .pydantic_sample_report import PydanticSampleReport
 
@@ -56,6 +58,10 @@ class PydanticPlasmidReport(PydanticCustomBase):
             errors=report.errors,
             warnings=report.warnings,
         )
+        counter = Counter()
         for sample in report.sample_reports:
-            result.samples.append(PydanticSampleReport.from_domain(sample))
+            model = PydanticSampleReport.from_domain(sample)
+            result.samples.append(model)
+            counter.update(model.conflict_counts)
+        result.conflict_counts = {status: counter[status] for status in ConflictStatus}
         return result

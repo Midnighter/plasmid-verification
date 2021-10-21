@@ -17,13 +17,14 @@ from __future__ import annotations
 
 from pydantic import Field, PositiveInt, conint
 
-from plasmid_verification.domain.model import Conflict
-from .pydantic_custom_base import PydanticCustomBase
 from plasmid_verification.domain.model import (
-    ConflictType,
+    Conflict,
     ConflictReliability,
     ConflictStatus,
+    ConflictType,
 )
+
+from .pydantic_custom_base import PydanticCustomBase
 
 
 class PydanticConflictReport(PydanticCustomBase):

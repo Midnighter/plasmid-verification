@@ -15,13 +15,15 @@
 
 from __future__ import annotations
 
-from typing import List
+from collections import Counter
+from typing import Dict, List
 
 from pydantic import Field, PositiveInt, confloat, conint
 
-from plasmid_verification.domain.model import SampleReport
-from .pydantic_custom_base import PydanticCustomBase
+from plasmid_verification.domain.model import ConflictStatus, SampleReport
+
 from .pydantic_conflict_report import PydanticConflictReport
+from .pydantic_custom_base import PydanticCustomBase
 
 
 class PydanticSampleReport(PydanticCustomBase):
@@ -70,6 +72,9 @@ class PydanticSampleReport(PydanticCustomBase):
     conflicts: List[PydanticConflictReport] = Field(
         (), description="A collection of individual alignment conflict reports."
     )
+    conflict_counts: Dict[ConflictStatus, int] = Field(
+        {}, alias="conflictCounts", title="Conflict Counts"
+    )
     errors: List[str] = Field(
         (), description="Any errors that occurred during sample analysis."
     )
@@ -96,6 +101,9 @@ class PydanticSampleReport(PydanticCustomBase):
             errors=report.errors,
             warnings=report.warnings,
         )
+        counter = Counter()
         for conflict in report.conflicts:
             result.conflicts.append(PydanticConflictReport.from_domain(conflict))
+            counter[conflict.status] += 1
+        result.conflict_counts = {status: counter[status] for status in ConflictStatus}
         return result
