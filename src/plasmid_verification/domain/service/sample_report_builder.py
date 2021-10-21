@@ -111,28 +111,27 @@ class SampleReportBuilder:
         self.report.alignment = self.alignment_service.align(
             query=self.report.trimmed.sequence, target=plasmid.sequence, **kwargs
         )
-        # reverse = alignment_service.align(
-        #     query=trimmed.sequence.reverse_complement(),
-        #     target=plasmid.sequence,
-        #     **kwargs,
-        # )
-        if False:
-            # if reverse.identity > alignment.identity:
-            self.report.alignment = reverse
-            self.report.strand = -1
-            direction = "reverse"
-            note = (
-                f"Alignment of reverse complement of trimmed sample "
-                f"{self.report.sample.identifier} to plasmid "
-                f"{self.report.plasmid.identifier}."
+        self.report.strand = 1
+        direction = "forward"
+        note = (
+            f"Alignment of trimmed sample {self.report.sample.identifier} to "
+            f"plasmid {plasmid.identifier}."
+        )
+        if self.report.alignment.identity < 0.95:
+            reverse = self.alignment_service.align(
+                query=self.report.trimmed.sequence.reverse_complement(),
+                target=plasmid.sequence,
+                **kwargs,
             )
-        else:
-            self.report.strand = 1
-            direction = "forward"
-            note = (
-                f"Alignment of trimmed sample {self.report.sample.identifier} to "
-                f"plasmid {plasmid.identifier}."
-            )
+            if reverse.score > self.report.alignment.score:
+                self.report.alignment = reverse
+                self.report.strand = -1
+                direction = "reverse"
+                note = (
+                    f"Alignment of reverse complement of trimmed sample "
+                    f"{self.report.sample.identifier} to plasmid "
+                    f"{plasmid.identifier}."
+                )
         logger.info(
             "Add sample from %d to %d in %s direction.",
             self.report.alignment.target_begin,
