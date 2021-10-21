@@ -69,5 +69,8 @@ class SequenceAlignment:
         ) / min(len(self.query_sequence), len(self.target_sequence))
 
     def query_location(self, target_location: int) -> int:
-        assert self.target_begin <= target_location <= self.target_end
+        assert self.target_begin <= target_location < self.target_end, (
+            f"The desired target location {target_location} is not within the aligned "
+            f"region [{self.target_begin}; {self.target_end})."
+        )
         return self.query_begin + target_location - self.target_begin
