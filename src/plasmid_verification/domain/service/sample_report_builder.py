@@ -91,6 +91,7 @@ class SampleReportBuilder:
             is_sorted=True,
             return_sorted=False,
         )
+        self.report.smoothed[self.report.smoothed < 0.0] = 0.0
         mask = self.report.smoothed >= self.report.quality_threshold
         # Get min/max position that has a Phred quality higher than the threshold.
 

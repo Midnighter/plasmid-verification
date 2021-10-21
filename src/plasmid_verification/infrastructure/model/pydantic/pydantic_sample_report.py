@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from pydantic import Field, PositiveInt, confloat, conint
 
@@ -41,15 +41,15 @@ class PydanticSampleReport(PydanticCustomBase):
         title="Median Quality",
         description="The median Phred quality of the sample read.",
     )
-    trim_start: conint(ge=0) = Field(
-        ...,
+    trim_start: Optional[conint(ge=0)] = Field(
+        None,
         alias="trimStart",
         title="Trim Start",
         description="The number of nucleotides trimmed at the beginning of the "
         "sequence due to low Phred quality and before alignment.",
     )
-    trim_end: conint(ge=0) = Field(
-        ...,
+    trim_end: Optional[conint(ge=0)] = Field(
+        None,
         alias="trimEnd",
         title="Trim End",
         description="The number of nucleotides trimmed at the end of the sequence due "
@@ -61,14 +61,14 @@ class PydanticSampleReport(PydanticCustomBase):
         title="Phred Quality",
         description="The Phred quality score at each position of the sequence.",
     )
-    smoothed_scores: List[confloat(ge=0.0, le=65.0)] = Field(
-        ...,
+    smoothed_scores: Optional[List[confloat(ge=0.0, le=65.0)]] = Field(
+        None,
         alias="smoothedScores",
         title="Smoothed Scores",
         description="The smoothed Phred quality scores.",
     )
     sequence: str = Field(..., description="The full nucleotide sequence.")
-    strand: int
+    strand: Optional[int] = None
     conflicts: List[PydanticConflictReport] = Field(
         (), description="A collection of individual alignment conflict reports."
     )
@@ -95,12 +95,13 @@ class PydanticSampleReport(PydanticCustomBase):
             trim_start=report.trim_begin,
             trim_end=report.trim_end,
             phred_quality=list(report.sample.phred_quality),
-            smoothed_scores=list(report.smoothed),
             sequence=str(report.sample.sequence),
             strand=report.strand,
             errors=report.errors,
             warnings=report.warnings,
         )
+        if report.alignment is not None:
+            result.smoothed_scores = list(report.smoothed)
         counter = Counter()
         for conflict in report.conflicts:
             result.conflicts.append(PydanticConflictReport.from_domain(conflict))

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from collections import Counter
 from io import StringIO
-from typing import List
+from typing import Dict, List
 
 from Bio import SeqIO
 from pydantic import Field
@@ -36,6 +36,9 @@ class PydanticPlasmidReport(PydanticCustomBase):
     )
     samples: List[PydanticSampleReport] = Field(
         (), description="A collection of individual sample (sequencing read) reports."
+    )
+    conflict_counts: Dict[ConflictStatus, int] = Field(
+        {}, alias="conflictCounts", title="Conflict Counts"
     )
     errors: List[str] = Field(
         (), description="Any errors that occurred during plasmid analysis."

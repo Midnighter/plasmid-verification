@@ -20,6 +20,7 @@ class PydanticCustomBase(BaseModel):
     class Config:
         allow_population_by_field_name = True
         validate_assignment = True
+        validate_all = True
 
     def dict(self, *, by_alias: bool = True, exclude_defaults=False, **kwargs) -> dict:
         return super().dict(
