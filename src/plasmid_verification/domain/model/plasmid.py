@@ -94,3 +94,11 @@ class Plasmid:
             )
         )
         self._features.sort(key=lambda f: (f.location.start, f.location.end))
+
+    def to_seqrecord(self) -> SeqRecord:
+        return SeqRecord(
+            id=self.identifier,
+            seq=self.sequence,
+            features=self.features,
+            annotations=self.annotation,
+        )
