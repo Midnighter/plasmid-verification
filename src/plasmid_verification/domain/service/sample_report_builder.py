@@ -85,16 +85,25 @@ class SampleReportBuilder:
         """Trim a sequence sample based on Phred quality."""
         index = np.arange(len(self.report.sample), dtype=int)
         self.report.smoothed = lowess(
-            self.report.sample.phred_quality, index, is_sorted=True, return_sorted=False
+            self.report.sample.phred_quality,
+            index,
+            frac=self.report.window / len(index),
+            is_sorted=True,
+            return_sorted=False,
         )
         mask = self.report.smoothed >= self.report.quality_threshold
         # Get min/max position that has a Phred quality higher than the threshold.
-        min_idx = index[mask][0]
-        max_idx = index[mask][-1] + 1
+
+        self.report.trim_begin = index[mask][0]
+        self.report.trim_end = index[mask][-1] + 1
         self.report.trimmed = Sample(
             identifier=f"{prefix}{self.report.sample.identifier}{suffix}",
-            sequence=self.report.sample.sequence[min_idx:max_idx],
-            phred_quality=self.report.sample.phred_quality[min_idx:max_idx],
+            sequence=self.report.sample.sequence[
+                self.report.trim_begin : self.report.trim_end
+            ],
+            phred_quality=self.report.sample.phred_quality[
+                self.report.trim_begin : self.report.trim_end
+            ],
         )
         return False
 
