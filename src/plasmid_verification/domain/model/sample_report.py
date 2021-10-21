@@ -94,7 +94,9 @@ class SampleReport:
         quality_threshold: float,
         window: int,
         trimmed: Optional[Sample] = None,
-        smooth: Optional[np.ndarray] = None,
+        trim_begin: Optional[int] = None,
+        trim_end: Optional[int] = None,
+        smoothed: Optional[np.ndarray] = None,
         alignment: Optional[SequenceAlignment] = None,
         strand: int = 1,
         median_quality: Optional[float] = None,
@@ -109,7 +111,9 @@ class SampleReport:
         self.quality_threshold = quality_threshold
         self.window = window
         self.trimmed = trimmed
-        self.smooth = smooth
+        self.trim_begin = trim_begin
+        self.trim_end = trim_end
+        self.smoothed = smoothed
         self.alignment: Optional[SequenceAlignment] = alignment
         self.strand = strand
         self.median_quality: Optional[float] = median_quality
