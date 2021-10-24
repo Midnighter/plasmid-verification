@@ -39,6 +39,11 @@ class SmoothingSampleTrimmingService(SampleTrimmingService):
         """
         Trim a sequencing sample based on the smoothed quality values and a threshold.
 
+        Implement Richard Mott's alternative trimming method for finding the
+        maximum scoring subsequence. Please see `-trim_alt` at the following link for
+        more information:
+        http://www.phrap.org/phredphrap/phred.html
+
         Args:
             sample: A sequencing sample.
             prefix:
@@ -59,13 +64,8 @@ class SmoothingSampleTrimmingService(SampleTrimmingService):
         """
         # Transform the quality values back to error probabilities.
         transform = cutoff - np.power(10.0, sample.phred_quality / -10.0)
-        scores = np.zeros_like(transform)
-        # Cumulative sum but reset to zero if the sum is smaller than zero.
-        for idx in range(1, len(scores)):
-            scores[idx] = scores[idx - 1] + transform[idx]
-            if scores[idx] < 0.0:
-                scores[idx] = 0.0
-        start, end = cls.find_max_scoring_segment(scores)
+        scores = cls.clamped_cumulative_sum(transform)
+        start, end = cls.find_max_scoring_subsequence(scores)
         return (
             Sample(
                 identifier=f"{prefix}{sample.identifier}{suffix}",
@@ -78,7 +78,26 @@ class SmoothingSampleTrimmingService(SampleTrimmingService):
         )
 
     @classmethod
-    def find_max_scoring_segment(cls, scores: np.ndarray) -> Tuple[int, int]:
+    def clamped_cumulative_sum(cls, values: np.ndarray) -> np.ndarray:
+        """
+        Compute the cumulative sum of the given values but clamp the minimum at zero.
+
+        Args:
+            values: The vector of values to sum up.
+
+        Returns:
+            Cumulative sum of the given values but sums below zero are clamped to zero.
+
+        """
+        result = np.zeros_like(values)
+        for idx in range(1, len(result)):
+            result[idx] = result[idx - 1] + values[idx]
+            if result[idx] < 0.0:
+                result[idx] = 0.0
+        return result
+
+    @classmethod
+    def find_max_scoring_subsequence(cls, scores: np.ndarray) -> Tuple[int, int]:
         max_idx = scores.argmax()
         # Index locations where the given condition is true.
         zero_locations = np.nonzero(scores == 0.0)[0]
