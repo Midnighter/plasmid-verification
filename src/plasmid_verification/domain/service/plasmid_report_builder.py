@@ -30,6 +30,7 @@ from ..model import (
     SampleReport,
 )
 from .sample_report_builder import SampleReportBuilder
+from .sample_trimming_service import SampleTrimmingService
 from .sequence_alignment_service import SequenceAlignmentService
 
 
@@ -37,10 +38,17 @@ logger = logging.getLogger(__name__)
 
 
 class PlasmidReportBuilder:
-    def __init__(self, *, alignment_service: Type[SequenceAlignmentService], **kwargs):
+    def __init__(
+        self,
+        *,
+        trimming_service: Type[SampleTrimmingService],
+        alignment_service: Type[SequenceAlignmentService],
+        **kwargs,
+    ):
         super().__init__(**kwargs)
-        self.alignment_service = alignment_service
-        self.report: Optional[PlasmidReport] = None
+        self._trimming_service = trimming_service
+        self._alignment_service = alignment_service
+        self._report: Optional[PlasmidReport] = None
 
     def build(
         self,
@@ -50,62 +58,63 @@ class PlasmidReportBuilder:
         window: int,
         **kwargs,
     ) -> PlasmidReport:
-        self.report = PlasmidReport(
+        self._report = PlasmidReport(
             plasmid=plasmid,
             samples=samples,
             quality_threshold=quality_threshold,
             window=window,
         )
         if self._build_sample_reports():
-            return self.report
+            return self._report
         if self._build_summary():
-            return self.report
+            return self._report
         if self._build_effects():
-            return self.report
-        return self.report
+            return self._report
+        return self._report
 
     def _build_effects(self) -> bool:
-        for sample in self.report.sample_reports:
+        for sample in self._report.sample_reports:
             for conflict in sample.conflicts:
                 conflict.evaluate_status()
-                self.report.evaluate_effect(conflict)
+                self._report.evaluate_effect(conflict)
         return False
 
     def _build_sample_reports(self) -> bool:
         sample_report_builder = SampleReportBuilder(
-            alignment_service=self.alignment_service
+            trimming_service=self._trimming_service,
+            alignment_service=self._alignment_service,
         )
-        for sample in self.report.samples:
+        for sample in self._report.samples:
             try:
-                self.report.sample_reports.append(
+                self._report.sample_reports.append(
                     sample_report_builder.build(
-                        self.report.plasmid,
+                        self._report.plasmid,
                         sample,
-                        quality_threshold=self.report.quality_threshold,
-                        window=self.report.window,
+                        quality_threshold=self._report.quality_threshold,
+                        window=self._report.window,
                     )
                 )
             except AssertionError as error:
                 logger.debug("", exc_info=error)
                 msg = (
                     f"Failed to generate report for sample {sample.identifier} with "
-                    f"plasmid {self.report.plasmid.identifier}."
+                    f"plasmid {self._report.plasmid.identifier}."
                 )
                 logger.error(msg)
-                self.report.errors.append(msg)
-        return not self.report.sample_reports
+                self._report.errors.append(msg)
+        return not self._report.sample_reports
 
     def _build_summary(self) -> bool:
-        if len(self.report.sample_reports) < 2:
+        if len(self._report.sample_reports) < 2:
             return False
-        for sample_a in self.report.sample_reports:
+        for sample_a in self._report.sample_reports:
             if sample_a.alignment is None:
                 logger.warning(
                     "Sample %s was not aligned, ignored in pairwise summary.",
                     sample_a.sample.identifier,
                 )
                 continue
-            for sample_b in self.report.sample_reports:
+            for sample_b in self._report.sample_reports:
                 if sample_a is sample_b:
                     continue
                 if sample_b.alignment is None:
@@ -189,4 +198,4 @@ class PlasmidReportBuilder:
         return max(first.begin, second.begin) <= min(first.end, second.end)
 
     def _is_reliable(self, region: np.ndarray) -> bool:
-        return np.nanmean(region) >= self.report.quality_threshold
+        return np.nanmean(region) >= self._report.quality_threshold

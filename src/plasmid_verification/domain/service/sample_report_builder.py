@@ -22,7 +22,6 @@ import logging
 from typing import Optional, Type
 
 import numpy as np
-from statsmodels.nonparametric.smoothers_lowess import lowess
 
 from ..model import (
     CIGAROperation,
@@ -33,6 +32,7 @@ from ..model import (
     Sample,
     SampleReport,
 )
+from .sample_trimming_service import SampleTrimmingService
 from .sequence_alignment_service import SequenceAlignmentService
 
 
@@ -40,10 +40,17 @@ logger = logging.getLogger(__name__)
 
 
 class SampleReportBuilder:
-    def __init__(self, *, alignment_service: Type[SequenceAlignmentService], **kwargs):
+    def __init__(
+        self,
+        *,
+        trimming_service: Type[SampleTrimmingService],
+        alignment_service: Type[SequenceAlignmentService],
+        **kwargs,
+    ):
         super().__init__(**kwargs)
-        self.alignment_service = alignment_service
-        self.report: Optional[SampleReport] = None
+        self._trimming_service = trimming_service
+        self._alignment_service = alignment_service
+        self._report: Optional[SampleReport] = None
 
     def build(
         self,
@@ -53,108 +60,97 @@ class SampleReportBuilder:
         window: int,
         **kwargs,
     ) -> SampleReport:
-        self.report = SampleReport(
-            sample=sample, quality_threshold=quality_threshold, window=window
+        self._report = SampleReport(
+            sample=sample,
+            quality_threshold=quality_threshold,
+            window=window,
         )
         if self._build_median():
-            return self.report
-        if self._build_trimmed():
-            return self.report
+            return self._report
+        if self._build_trimmed(**kwargs):
+            return self._report
         if self._build_alignment(plasmid, **kwargs):
-            return self.report
+            return self._report
         if self._build_conflicts():
-            return self.report
-        return self.report
+            return self._report
+        return self._report
 
     def _build_median(self) -> bool:
-        self.report.median_quality = np.nanmedian(self.report.sample.phred_quality)
-        if self.report.median_quality < self.report.quality_threshold:
-            self.report.errors.append(
-                f"The sample's ({self.report.sample.identifier}) median Phred quality "
-                f"{self.report.median_quality} is below the threshold "
-                f"{self.report.quality_threshold}."
+        self._report.median_quality = np.nanmedian(self._report.sample.phred_quality)
+        if self._report.median_quality < self._report.quality_threshold:
+            self._report.errors.append(
+                f"The sample's ({self._report.sample.identifier}) median Phred quality "
+                f"{self._report.median_quality} is below the threshold "
+                f"{self._report.quality_threshold}."
             )
             return True
         return False
 
     def _build_trimmed(
-        self,
-        prefix: str = "",
-        suffix: str = "_trimmed",
+        self, prefix: str = "", suffix: str = "_trimmed", **kwargs
     ) -> bool:
         """Trim a sequence sample based on Phred quality."""
-        index = np.arange(len(self.report.sample), dtype=int)
-        self.report.smoothed = lowess(
-            self.report.sample.phred_quality,
-            index,
-            frac=self.report.window / len(index),
-            is_sorted=True,
-            return_sorted=False,
-        )
-        self.report.smoothed[self.report.smoothed < 0.0] = 0.0
-        mask = self.report.smoothed >= self.report.quality_threshold
-        # Get min/max position that has a Phred quality higher than the threshold.
-
-        self.report.trim_begin = index[mask][0]
-        self.report.trim_end = index[mask][-1] + 1
-        self.report.trimmed = Sample(
-            identifier=f"{prefix}{self.report.sample.identifier}{suffix}",
-            sequence=self.report.sample.sequence[
-                self.report.trim_begin : self.report.trim_end
-            ],
-            phred_quality=self.report.sample.phred_quality[
-                self.report.trim_begin : self.report.trim_end
-            ],
+        (
+            self._report.trimmed,
+            self._report.trim_begin,
+            self._report.trim_end,
+            self._report.smoothed,
+        ) = self._trimming_service.trim(
+            self._report.sample,
+            prefix=prefix,
+            suffix=suffix,
+            cutoff=self._report.quality_threshold,
+            **kwargs,
         )
         return False
 
     def _build_alignment(self, plasmid: Plasmid, **kwargs) -> bool:
-        self.report.alignment = self.alignment_service.align(
-            query=self.report.trimmed.sequence, target=plasmid.sequence, **kwargs
+        self._report.alignment = self._alignment_service.align(
+            query=self._report.trimmed.sequence, target=plasmid.sequence, **kwargs
         )
-        self.report.strand = 1
+        self._report.strand = 1
         direction = "forward"
         note = (
-            f"Alignment of trimmed sample {self.report.sample.identifier} to "
+            f"Alignment of trimmed sample {self._report.sample.identifier} to "
             f"plasmid {plasmid.identifier}."
         )
-        if self.report.alignment.identity < 0.95:
-            reverse = self.alignment_service.align(
-                query=self.report.trimmed.sequence.reverse_complement(),
+        if self._report.alignment.identity < 0.95:
+            reverse = self._alignment_service.align(
+                query=self._report.trimmed.sequence.reverse_complement(),
                 target=plasmid.sequence,
                 **kwargs,
             )
-            if reverse.score > self.report.alignment.score:
-                self.report.alignment = reverse
-                self.report.strand = -1
+            if reverse.score > self._report.alignment.score:
+                self._report.alignment = reverse
+                self._report.strand = -1
                 direction = "reverse"
                 note = (
                     f"Alignment of reverse complement of trimmed sample "
-                    f"{self.report.sample.identifier} to plasmid "
+                    f"{self._report.sample.identifier} to plasmid "
                     f"{plasmid.identifier}."
                 )
         logger.info(
             "Add sample from %d to %d in %s direction.",
-            self.report.alignment.target_begin,
-            self.report.alignment.target_end,
+            self._report.alignment.target_begin,
+            self._report.alignment.target_end,
             direction,
         )
         plasmid.add_feature(
-            self.report.alignment.target_begin,
-            self.report.alignment.target_end,
+            self._report.alignment.target_begin,
+            self._report.alignment.target_end,
             type="misc_feature",
-            strand=self.report.strand,
+            strand=self._report.strand,
             qualifiers={
-                "label": f"Alignment of {self.report.sample.identifier}",
+                "label": f"Alignment of {self._report.sample.identifier}",
                 "note": note,
             },
         )
         return False
 
     def _build_conflicts(self) -> bool:
-        target_index = self.report.alignment.target_begin
-        query_index = self.report.alignment.query_begin
-        events = list(self.report.alignment.iter_cigar())
+        target_index = self._report.alignment.target_begin
+        query_index = self._report.alignment.query_begin
+        events = list(self._report.alignment.iter_cigar())
         for idx, (span, code) in enumerate(events):
             if code is CIGAROperation.match:
                 target_index += span
@@ -164,19 +160,19 @@ class SampleReportBuilder:
                 assert events[idx - 1][1] is CIGAROperation.match
                 assert events[idx + 1][1] is CIGAROperation.match
                 quality = (
-                    self.report.trimmed.phred_quality[query_index - 1]
-                    + self.report.trimmed.phred_quality[query_index]
+                    self._report.trimmed.phred_quality[query_index - 1]
+                    + self._report.trimmed.phred_quality[query_index]
                 ) / 2
                 logger.info(
                     "Add deletion from %d to %d.", target_index, target_index + span
                 )
-                self.report.conflicts.append(
+                self._report.conflicts.append(
                     Conflict(
                         type=ConflictType.DELETION,
                         begin=target_index,
                         end=target_index + span,
                         reliability=ConflictReliability.HIGH
-                        if quality >= self.report.quality_threshold
+                        if quality >= self._report.quality_threshold
                         else ConflictReliability.LOW,
                         span=span,
                     )
@@ -187,16 +183,16 @@ class SampleReportBuilder:
                 assert events[idx - 1][1] is CIGAROperation.match
                 assert events[idx + 1][1] is CIGAROperation.match
                 quality = np.nanmean(
-                    self.report.trimmed.phred_quality[query_index : query_index + span]
+                    self._report.trimmed.phred_quality[query_index : query_index + span]
                 )
                 logger.info("Add insertion at %d.", target_index)
-                self.report.conflicts.append(
+                self._report.conflicts.append(
                     Conflict(
                         type=ConflictType.INSERTION,
                         begin=target_index,
                         end=target_index,
                         reliability=ConflictReliability.HIGH
-                        if quality >= self.report.quality_threshold
+                        if quality >= self._report.quality_threshold
                         else ConflictReliability.LOW,
                         span=span,
                     )
