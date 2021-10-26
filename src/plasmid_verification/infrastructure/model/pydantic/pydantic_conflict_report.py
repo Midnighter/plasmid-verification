@@ -61,7 +61,7 @@ class PydanticConflictReport(PydanticCustomBase):
         result = cls(
             plasmid_letters="",
             sample_letters="",
-            plasmid_position=conflict.begin,
+            plasmid_position=conflict.plasmid_begin,
             span=conflict.span,
             type=conflict.type,
             reliability=conflict.reliability,

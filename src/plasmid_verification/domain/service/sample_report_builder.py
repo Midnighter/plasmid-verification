@@ -167,8 +167,10 @@ class SampleReportBuilder:
                         self._report.conflicts.append(
                             Conflict(
                                 type=ConflictType.VARIANT,
-                                begin=t,
-                                end=t,
+                                plasmid_begin=t,
+                                plasmid_end=t,
+                                sample_begin=q,
+                                sample_end=q,
                                 reliability=self._report.judge_reliability(
                                     self._report.trimmed.phred_quality[q]
                                 ),
@@ -191,8 +193,10 @@ class SampleReportBuilder:
                 self._report.conflicts.append(
                     Conflict(
                         type=ConflictType.DELETION,
-                        begin=target_index,
-                        end=target_index + span,
+                        plasmid_begin=target_index,
+                        plasmid_end=target_index + span,
+                        sample_begin=query_index,
+                        sample_end=query_index,
                         reliability=self._report.judge_reliability(quality),
                         span=span,
                     )
@@ -209,8 +213,10 @@ class SampleReportBuilder:
                 self._report.conflicts.append(
                     Conflict(
                         type=ConflictType.INSERTION,
-                        begin=target_index,
-                        end=target_index,
+                        plasmid_begin=target_index,
+                        plasmid_end=target_index,
+                        sample_begin=query_index,
+                        sample_end=query_index + span,
                         reliability=self._report.judge_reliability(quality),
                         span=span,
                     )

@@ -178,7 +178,7 @@ class PlasmidReportBuilder:
                     break
             else:
                 # Can sample B invalidate conflict A?
-                location = sample_b.alignment.query_location(conflict_a.begin)
+                location = sample_b.alignment.query_location(conflict_a.plasmid_begin)
                 if self._is_reliable(
                     sample_b.trimmed.phred_quality[
                         location : location + conflict_a.span
@@ -194,8 +194,12 @@ class PlasmidReportBuilder:
         second_conflict: Conflict,
         second_sample: SampleReport,
     ) -> bool:
-        first_location = first_sample.alignment.query_location(first_conflict.begin)
-        second_location = second_sample.alignment.query_location(second_conflict.begin)
+        first_location = first_sample.alignment.query_location(
+            first_conflict.plasmid_begin
+        )
+        second_location = second_sample.alignment.query_location(
+            second_conflict.plasmid_begin
+        )
         return (
             first_sample.trimmed.sequence[
                 first_location : first_location + first_conflict.span
@@ -215,13 +219,15 @@ class PlasmidReportBuilder:
     def _do_sample_and_conflict_overlap(
         cls, first: Conflict, second: SampleReport
     ) -> bool:
-        return max(first.begin, second.alignment.target_begin) <= min(
-            first.end, second.alignment.target_end
+        return max(first.plasmid_begin, second.alignment.target_begin) <= min(
+            first.plasmid_end, second.alignment.target_end
         )
 
     @classmethod
     def _do_conflicts_overlap(cls, first: Conflict, second: Conflict) -> bool:
-        return max(first.begin, second.begin) <= min(first.end, second.end)
+        return max(first.plasmid_begin, second.plasmid_begin) <= min(
+            first.plasmid_end, second.plasmid_end
+        )
 
     def _is_reliable(self, region: np.ndarray) -> bool:
         return np.nanmean(region) >= self._report.quality_threshold

@@ -71,8 +71,10 @@ class EffectType(str, Enum):
 class Conflict:
 
     type: ConflictType
-    begin: int
-    end: int
+    plasmid_begin: int
+    plasmid_end: int
+    sample_begin: int
+    sample_end: int
     span: int
     reliability: ConflictReliability
     status: ConflictStatus = ConflictStatus.POTENTIAL

@@ -58,6 +58,6 @@ class PlasmidReport:
     def do_feature_and_conflict_overlap(
         cls, feature: SeqFeature, conflict: Conflict
     ) -> bool:
-        return max(feature.location.start, conflict.begin) <= min(
-            feature.location.end, conflict.end
+        return max(feature.location.start, conflict.plasmid_begin) <= min(
+            feature.location.plasmid_end, conflict.plasmid_end
         )
