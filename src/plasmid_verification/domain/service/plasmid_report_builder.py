@@ -30,6 +30,7 @@ from ..model import (
     SampleReport,
     ConflictStatus,
     StrandDirection,
+    ConflictType,
 )
 from .sample_report_builder import SampleReportBuilder
 from .sample_trimming_service import SampleTrimmingService
@@ -74,31 +75,6 @@ class PlasmidReportBuilder:
         if self._build_effects():
             return self._report
         return self._report
-
-    def _build_effects(self) -> bool:
-        for sample in self._report.sample_reports:
-            for conflict in sample.conflicts:
-                conflict.evaluate_status()
-                self._report.evaluate_effect(conflict)
-                if (
-                    conflict.status is not ConflictStatus.RESOLVED
-                    and conflict.reliability is ConflictReliability.HIGH
-                ):
-                    plasmid_seq = self._report.plasmid.sequence[
-                        conflict.begin : conflict.begin + conflict.span
-                    ]
-                    label = f"{conflict.type.value}: {plasmid_seq} -> "
-                    self._report.plasmid.add_feature(
-                        conflict.begin,
-                        conflict.end,
-                        type="conflict",
-                        strand=StrandDirection.FORWARD,
-                        qualifiers={
-                            "label": label,
-                            "note": "Effect: #TODO",
-                        },
-                    )
-        return False
 
     def _build_sample_reports(
         self,
@@ -231,3 +207,47 @@ class PlasmidReportBuilder:
 
     def _is_reliable(self, region: np.ndarray) -> bool:
         return np.nanmean(region) >= self._report.quality_threshold
+
+    def _build_effects(self) -> bool:
+        for sample in self._report.sample_reports:
+            for conflict in sample.conflicts:
+                conflict.evaluate_status()
+                self._report.evaluate_effect(conflict)
+                if (
+                    conflict.status is not ConflictStatus.RESOLVED
+                    and conflict.reliability is ConflictReliability.HIGH
+                ):
+                    self._report.plasmid.add_feature(
+                        conflict.plasmid_begin,
+                        conflict.plasmid_end,
+                        type="conflict",
+                        strand=StrandDirection.FORWARD,
+                        qualifiers={
+                            "label": self._conflict_label(conflict, sample),
+                            "note": "Effect: #TODO",
+                        },
+                    )
+        return False
+
+    def _conflict_label(self, conflict: Conflict, sample: Sample) -> str:
+        end = (
+            conflict.plasmid_end + 1
+            if conflict.plasmid_begin == conflict.plasmid_end
+            else conflict.plasmid_end
+        )
+        plasmid_seq = self._report.plasmid.sequence[conflict.plasmid_begin : end]
+        end = (
+            conflict.sample_end + 1
+            if conflict.sample_begin == conflict.sample_end
+            else conflict.sample_end
+        )
+        sample_seq = sample.sequence[conflict.sample_begin : end]
+        if conflict.type is ConflictType.VARIANT:
+            label = f"SNV: {plasmid_seq} -> {sample_seq}"
+        elif conflict.type is ConflictType.DELETION:
+            label = f"Deletion: {plasmid_seq} -> {'-' * conflict.span}"
+        elif conflict.type is ConflictType.INSERTION:
+            label = f"Deletion: {'-' * conflict.span} -> {sample_seq}"
+        else:
+            raise RuntimeError(f"Unknown conflict type {conflict.type}.")
+        return label
