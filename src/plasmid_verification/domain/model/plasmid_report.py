@@ -59,5 +59,5 @@ class PlasmidReport:
         cls, feature: SeqFeature, conflict: Conflict
     ) -> bool:
         return max(feature.location.start, conflict.plasmid_begin) <= min(
-            feature.location.plasmid_end, conflict.plasmid_end
+            feature.location.end, conflict.plasmid_end
         )
