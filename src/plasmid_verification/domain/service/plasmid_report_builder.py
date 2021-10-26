@@ -28,6 +28,8 @@ from ..model import (
     PlasmidReport,
     Sample,
     SampleReport,
+    ConflictStatus,
+    StrandDirection,
 )
 from .sample_report_builder import SampleReportBuilder
 from .sample_trimming_service import SampleTrimmingService
@@ -78,6 +80,24 @@ class PlasmidReportBuilder:
             for conflict in sample.conflicts:
                 conflict.evaluate_status()
                 self._report.evaluate_effect(conflict)
+                if (
+                    conflict.status is not ConflictStatus.RESOLVED
+                    and conflict.reliability is ConflictReliability.HIGH
+                ):
+                    plasmid_seq = self._report.plasmid.sequence[
+                        conflict.begin : conflict.begin + conflict.span
+                    ]
+                    label = f"{conflict.type.value}: {plasmid_seq} -> "
+                    self._report.plasmid.add_feature(
+                        conflict.begin,
+                        conflict.end,
+                        type="conflict",
+                        strand=StrandDirection.FORWARD,
+                        qualifiers={
+                            "label": label,
+                            "note": "Effect: #TODO",
+                        },
+                    )
         return False
 
     def _build_sample_reports(
