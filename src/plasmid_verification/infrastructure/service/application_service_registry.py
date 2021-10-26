@@ -29,5 +29,6 @@ class ApplicationServiceRegistry:
         return PlasmidReportService(
             plasmid_repository=DomainRegistry.plasmid_repository(archive=archive),
             sample_repository=DomainRegistry.sample_repository(archive=archive),
+            trimming_service=DomainRegistry.sample_trimming_service(),
             alignment_service=DomainRegistry.sequence_alignment_service(),
         )
