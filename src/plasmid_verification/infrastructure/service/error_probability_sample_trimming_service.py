@@ -23,7 +23,7 @@ from plasmid_verification.domain.model import Sample
 from plasmid_verification.domain.service import SampleTrimmingService
 
 
-class SmoothingSampleTrimmingService(SampleTrimmingService):
+class ErrorProbabilitySampleTrimmingService(SampleTrimmingService):
     """Define a service that trims samples based on the smoothed Phred quality."""
 
     @classmethod

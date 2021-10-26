@@ -27,6 +27,7 @@ from plasmid_verification.domain.model import (
 from plasmid_verification.domain.service import (
     PlasmidReportBuilder,
     SequenceAlignmentService,
+    SampleTrimmingService,
 )
 
 
@@ -39,6 +40,7 @@ class PlasmidReportService:
         *,
         plasmid_repository: PlasmidRepository,
         sample_repository: SampleRepository,
+        trimming_service: Type[SampleTrimmingService],
         alignment_service: Type[SequenceAlignmentService],
         **kwargs,
     ) -> None:
@@ -46,7 +48,9 @@ class PlasmidReportService:
         super().__init__(**kwargs)
         self.plasmid_repository = plasmid_repository
         self.sample_repository = sample_repository
-        self._builder = PlasmidReportBuilder(alignment_service=alignment_service)
+        self._builder = PlasmidReportBuilder(
+            trimming_service=trimming_service, alignment_service=alignment_service
+        )
 
     def report(
         self,
