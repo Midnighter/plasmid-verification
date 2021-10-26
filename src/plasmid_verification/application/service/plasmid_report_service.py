@@ -17,7 +17,7 @@
 
 
 import logging
-from typing import Iterable, Type
+from typing import Iterable, Type, Optional
 
 from plasmid_verification.domain.model import (
     PlasmidReport,
@@ -57,7 +57,8 @@ class PlasmidReportService:
         plasmid_id: str,
         sample_ids: Iterable[str],
         quality_threshold: float,
-        window: int,
+        trim_kwargs: Optional[dict] = None,
+        alignment_kwargs: Optional[dict] = None,
     ) -> PlasmidReport:
         plasmid = self.plasmid_repository.find(plasmid_id)
         assert plasmid is not None, f"Plasmid {plasmid_id} not found in repository."
@@ -73,7 +74,8 @@ class PlasmidReportService:
             plasmid=plasmid,
             samples=samples,
             quality_threshold=quality_threshold,
-            window=window,
+            trim_kwargs={} if trim_kwargs is None else trim_kwargs,
+            alignment_kwargs={} if alignment_kwargs is None else alignment_kwargs,
         )
         result.errors.extend(errors)
         return result

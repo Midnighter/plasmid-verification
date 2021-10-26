@@ -56,19 +56,22 @@ class SampleReportBuilder:
         plasmid: Plasmid,
         sample: Sample,
         quality_threshold: float,
-        window: int,
+        trim_kwargs: dict,
+        alignment_kwargs: dict,
         **kwargs,
     ) -> SampleReport:
         self._report = SampleReport(
             sample=sample,
             quality_threshold=quality_threshold,
-            window=window,
+            trim_kwargs=trim_kwargs,
+            alignment_kwargs=alignment_kwargs,
+            **kwargs,
         )
         if self._build_median():
             return self._report
-        if self._build_trimmed(**kwargs):
+        if self._build_trimmed(**trim_kwargs):
             return self._report
-        if self._build_alignment(plasmid, **kwargs):
+        if self._build_alignment(plasmid, **alignment_kwargs):
             return self._report
         if self._build_conflicts():
             return self._report
@@ -98,7 +101,6 @@ class SampleReportBuilder:
             self._report.sample,
             prefix=prefix,
             suffix=suffix,
-            cutoff=self._report.quality_threshold,
             **kwargs,
         )
         return False

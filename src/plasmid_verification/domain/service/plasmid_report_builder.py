@@ -55,16 +55,17 @@ class PlasmidReportBuilder:
         plasmid: Plasmid,
         samples: Iterable[Sample],
         quality_threshold: float,
-        window: int,
+        trim_kwargs: dict,
+        alignment_kwargs: dict,
         **kwargs,
     ) -> PlasmidReport:
         self._report = PlasmidReport(
             plasmid=plasmid,
             samples=samples,
             quality_threshold=quality_threshold,
-            window=window,
+            **kwargs,
         )
-        if self._build_sample_reports():
+        if self._build_sample_reports(trim_kwargs, alignment_kwargs):
             return self._report
         if self._build_summary():
             return self._report
@@ -79,7 +80,11 @@ class PlasmidReportBuilder:
                 self._report.evaluate_effect(conflict)
         return False
 
-    def _build_sample_reports(self) -> bool:
+    def _build_sample_reports(
+        self,
+        trim_kwargs: dict,
+        alignment_kwargs: dict,
+    ) -> bool:
         sample_report_builder = SampleReportBuilder(
             trimming_service=self._trimming_service,
             alignment_service=self._alignment_service,
@@ -91,7 +96,8 @@ class PlasmidReportBuilder:
                         self._report.plasmid,
                         sample,
                         quality_threshold=self._report.quality_threshold,
-                        window=self._report.window,
+                        trim_kwargs=trim_kwargs,
+                        alignment_kwargs=alignment_kwargs,
                     )
                 )
             except AssertionError as error:

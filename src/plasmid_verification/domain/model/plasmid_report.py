@@ -32,7 +32,6 @@ class PlasmidReport:
         plasmid: Plasmid,
         samples: Iterable[Sample] = (),
         quality_threshold: float,
-        window: int,
         sample_reports: Iterable[SampleReport] = (),
         errors: Iterable[str] = (),
         warnings: Iterable[str] = (),
@@ -43,7 +42,6 @@ class PlasmidReport:
         self.plasmid = plasmid
         self.samples = list(samples)
         self.quality_threshold = quality_threshold
-        self.window = window
         self.sample_reports = list(sample_reports)
         self.errors = list(errors)
         self.warnings = list(warnings)

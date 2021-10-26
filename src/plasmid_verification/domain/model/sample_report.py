@@ -100,7 +100,6 @@ class SampleReport:
         *,
         sample: Sample,
         quality_threshold: float,
-        window: int,
         trimmed: Optional[Sample] = None,
         trim_begin: Optional[int] = None,
         trim_end: Optional[int] = None,
@@ -111,13 +110,14 @@ class SampleReport:
         conflicts: Iterable[Conflict] = (),
         errors: Iterable[str] = (),
         warnings: Iterable[str] = (),
+        trim_kwargs: Optional[dict] = None,
+        alignment_kwargs: Optional[dict] = None,
         **kwargs
     ) -> None:
         """"""
         super().__init__(**kwargs)
         self.sample = sample
         self.quality_threshold = quality_threshold
-        self.window = window
         self.trimmed = trimmed
         self.trim_begin = trim_begin
         self.trim_end = trim_end
@@ -128,6 +128,8 @@ class SampleReport:
         self.conflicts = list(conflicts)
         self.errors = list(errors)
         self.warnings = list(warnings)
+        self.trim_kwargs = {} if trim_kwargs is None else trim_kwargs
+        self.alignment_kwargs = {} if alignment_kwargs is None else alignment_kwargs
 
     def judge_reliability(self, score: float) -> ConflictReliability:
         return (
