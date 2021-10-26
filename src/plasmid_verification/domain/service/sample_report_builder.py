@@ -115,14 +115,16 @@ class SampleReportBuilder:
             f"plasmid {plasmid.identifier}."
         )
         if self._report.alignment.identity < 0.95:
-            reverse = self._alignment_service.align(
+            reverse_alignment = self._alignment_service.align(
                 query=self._report.trimmed.sequence.reverse_complement(),
                 target=plasmid.sequence,
                 **kwargs,
             )
-            if reverse.score > self._report.alignment.score:
-                self._report.alignment = reverse
-                self._report.strand = -1
+            if reverse_alignment.score > self._report.alignment.score:
+                self._report.alignment = reverse_alignment
+                self._report.trimmed = self._report.trimmed.reverse_complement()
+                self._report.sample = self._report.sample.reverse_complement()
+                self._report.strand = StrandDirection.REVERSE
                 direction = "reverse"
                 note = (
                     f"Alignment of reverse complement of trimmed sample "
