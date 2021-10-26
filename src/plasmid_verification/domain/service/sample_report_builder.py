@@ -26,7 +26,6 @@ import numpy as np
 from ..model import (
     CIGAROperation,
     Conflict,
-    ConflictReliability,
     ConflictType,
     Plasmid,
     Sample,
@@ -155,6 +154,25 @@ class SampleReportBuilder:
         events = list(self._report.alignment.iter_cigar())
         for idx, (span, code) in enumerate(events):
             if code is CIGAROperation.match:
+                for q, t in zip(
+                    range(query_index, query_index + span),
+                    range(target_index, target_index + span),
+                ):
+                    if (
+                        self._report.alignment.query_sequence[q]
+                        != self._report.alignment.target_sequence[t]
+                    ):
+                        self._report.conflicts.append(
+                            Conflict(
+                                type=ConflictType.VARIANT,
+                                begin=t,
+                                end=t,
+                                reliability=self._report.judge_reliability(
+                                    self._report.trimmed.phred_quality[q]
+                                ),
+                                span=1,
+                            )
+                        )
                 target_index += span
                 query_index += span
             elif code is CIGAROperation.deletion:
