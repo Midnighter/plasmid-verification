@@ -24,6 +24,8 @@ from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
 from Bio.SeqRecord import SeqRecord
 
+from .sample_report import StrandDirection
+
 
 class Plasmid:
     def __init__(
@@ -84,11 +86,13 @@ class Plasmid:
         end: int,
         qualifiers: Dict[str, str],
         type: str,
-        strand: int = 1,
+        strand: StrandDirection = StrandDirection.FORWARD,
     ) -> None:
         self._features.append(
             SeqFeature(
-                location=FeatureLocation(start=start, end=end, strand=strand),
+                location=FeatureLocation(
+                    start=start, end=end, strand=int(strand.value)
+                ),
                 type=type,
                 qualifiers=qualifiers,
             )

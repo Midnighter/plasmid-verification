@@ -31,10 +31,10 @@ from ..model import (
     Plasmid,
     Sample,
     SampleReport,
+    StrandDirection,
 )
 from .sample_trimming_service import SampleTrimmingService
 from .sequence_alignment_service import SequenceAlignmentService
-
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class SampleReportBuilder:
         self._report.alignment = self._alignment_service.align(
             query=self._report.trimmed.sequence, target=plasmid.sequence, **kwargs
         )
-        self._report.strand = 1
+        self._report.strand = StrandDirection.FORWARD
         direction = "forward"
         note = (
             f"Alignment of trimmed sample {self._report.sample.identifier} to "

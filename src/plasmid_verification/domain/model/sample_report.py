@@ -28,12 +28,20 @@ from .sample import Sample
 from .sequence_alignment import SequenceAlignment
 
 
+class StrandDirection(int, Enum):
+    """Define the possible strand directions of a plasmid feature."""
+
+    FORWARD = 1
+    REVERSE = -1
+    UNKNOWN = 0
+
+
 class ConflictType(str, Enum):
     """Define the possible types of alignment conflicts."""
 
     INSERTION = "insertion"
     DELETION = "deletion"
-    CHANGE = "change"
+    VARIANT = "variant"
 
 
 class ConflictReliability(str, Enum):
@@ -98,7 +106,7 @@ class SampleReport:
         trim_end: Optional[int] = None,
         smoothed: Optional[np.ndarray] = None,
         alignment: Optional[SequenceAlignment] = None,
-        strand: int = 1,
+        strand: StrandDirection = StrandDirection.FORWARD,
         median_quality: Optional[float] = None,
         conflicts: Iterable[Conflict] = (),
         errors: Iterable[str] = (),

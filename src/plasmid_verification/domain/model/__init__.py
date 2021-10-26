@@ -26,5 +26,6 @@ from .sample_report import (
     ConflictType,
     ConflictStatus,
     SampleReport,
+    StrandDirection,
 )
 from .plasmid_report import PlasmidReport

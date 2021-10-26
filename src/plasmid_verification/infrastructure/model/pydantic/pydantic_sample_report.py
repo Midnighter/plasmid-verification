@@ -20,7 +20,11 @@ from typing import Dict, List, Optional
 
 from pydantic import Field, PositiveInt, confloat, conint
 
-from plasmid_verification.domain.model import ConflictStatus, SampleReport
+from plasmid_verification.domain.model import (
+    ConflictStatus,
+    SampleReport,
+    StrandDirection,
+)
 
 from .pydantic_conflict_report import PydanticConflictReport
 from .pydantic_custom_base import PydanticCustomBase
@@ -68,7 +72,7 @@ class PydanticSampleReport(PydanticCustomBase):
         description="The smoothed Phred quality scores.",
     )
     sequence: str = Field(..., description="The full nucleotide sequence.")
-    strand: Optional[int] = None
+    strand: Optional[StrandDirection] = None
     conflicts: List[PydanticConflictReport] = Field(
         (), description="A collection of individual alignment conflict reports."
     )
