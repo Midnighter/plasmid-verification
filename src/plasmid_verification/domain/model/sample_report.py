@@ -128,3 +128,10 @@ class SampleReport:
         self.conflicts = list(conflicts)
         self.errors = list(errors)
         self.warnings = list(warnings)
+
+    def judge_reliability(self, score: float) -> ConflictReliability:
+        return (
+            ConflictReliability.HIGH
+            if score >= self.quality_threshold
+            else ConflictReliability.LOW
+        )
