@@ -27,7 +27,7 @@ class PydanticCustomBase(BaseModel):
             by_alias=by_alias, exclude_defaults=exclude_defaults, **kwargs
         )
 
-    def json(self, *, by_alias: bool = True, exclude_defaults=False, **kwargs) -> dict:
+    def json(self, *, by_alias: bool = True, exclude_defaults=False, **kwargs) -> str:
         return super().json(
             by_alias=by_alias, exclude_defaults=exclude_defaults, **kwargs
         )
