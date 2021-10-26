@@ -173,9 +173,7 @@ class SampleReportBuilder:
                         type=ConflictType.DELETION,
                         begin=target_index,
                         end=target_index + span,
-                        reliability=ConflictReliability.HIGH
-                        if quality >= self._report.quality_threshold
-                        else ConflictReliability.LOW,
+                        reliability=self._report.judge_reliability(quality),
                         span=span,
                     )
                 )
@@ -193,9 +191,7 @@ class SampleReportBuilder:
                         type=ConflictType.INSERTION,
                         begin=target_index,
                         end=target_index,
-                        reliability=ConflictReliability.HIGH
-                        if quality >= self._report.quality_threshold
-                        else ConflictReliability.LOW,
+                        reliability=self._report.judge_reliability(quality),
                         span=span,
                     )
                 )
