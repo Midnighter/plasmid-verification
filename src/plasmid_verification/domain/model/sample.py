@@ -66,3 +66,11 @@ class Sample:
     def phred_quality(self) -> np.ndarray:
         """Return the Phred quality scores for all sequence positions."""
         return self._phred_quality.copy()
+
+    def reverse_complement(self) -> Sample:
+        """Return the reverse complement of itself."""
+        return Sample(
+            identifier=f"complement({self.identifier})",
+            sequence=self.sequence.reverse_complement(),
+            phred_quality=self.phred_quality[::-1].copy(),
+        )
