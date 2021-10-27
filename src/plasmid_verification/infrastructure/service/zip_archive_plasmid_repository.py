@@ -38,7 +38,8 @@ class ZipArchivePlasmidRepository(PlasmidRepository):
             path.stem: Plasmid.from_genbank(
                 SeqIO.read(
                     TextIOWrapper(archive.open(str(path), mode="r")), format="genbank"
-                )
+                ),
+                identifier=path.stem,
             )
             for path in (Path(filename) for filename in archive.namelist())
             if path.suffix in self._VALID_EXTENSIONS

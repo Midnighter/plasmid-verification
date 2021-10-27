@@ -18,7 +18,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Optional
 
 from Bio.Seq import Seq
 from Bio.SeqFeature import FeatureLocation, SeqFeature
@@ -47,10 +47,12 @@ class Plasmid:
         self._annotation = annotation
 
     @classmethod
-    def from_genbank(cls, record: SeqRecord) -> Plasmid:
+    def from_genbank(
+        cls, record: SeqRecord, identifier: Optional[str] = None
+    ) -> Plasmid:
         """"""
         return cls(
-            identifier=record.id,
+            identifier=record.id if identifier is None else identifier,
             sequence=record.seq,
             features=record.features,
             annotation=record.annotations,
