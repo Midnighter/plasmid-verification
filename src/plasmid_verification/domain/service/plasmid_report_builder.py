@@ -229,7 +229,7 @@ class PlasmidReportBuilder:
                     )
         return False
 
-    def _conflict_label(self, conflict: Conflict, sample: Sample) -> str:
+    def _conflict_label(self, conflict: Conflict, sample: SampleReport) -> str:
         end = (
             conflict.plasmid_end + 1
             if conflict.plasmid_begin == conflict.plasmid_end
@@ -241,7 +241,7 @@ class PlasmidReportBuilder:
             if conflict.sample_begin == conflict.sample_end
             else conflict.sample_end
         )
-        sample_seq = sample.sequence[conflict.sample_begin : end]
+        sample_seq = sample.sample.sequence[conflict.sample_begin : end]
         if conflict.type is ConflictType.VARIANT:
             label = f"SNV: {plasmid_seq} -> {sample_seq}"
         elif conflict.type is ConflictType.DELETION:
