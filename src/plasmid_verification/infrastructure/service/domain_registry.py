@@ -18,8 +18,8 @@ from typing import Optional, Type
 
 from plasmid_verification.domain.model import PlasmidRepository, SampleRepository
 from plasmid_verification.domain.service import (
-    SequenceAlignmentService,
     SampleTrimmingService,
+    SequenceAlignmentService,
 )
 
 from .zip_archive_plasmid_repository import ZipArchivePlasmidRepository

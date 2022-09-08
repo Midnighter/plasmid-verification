@@ -17,7 +17,7 @@
 
 
 import logging
-from typing import Iterable, Type, Optional
+from typing import Iterable, Optional, Type
 
 from plasmid_verification.domain.model import (
     PlasmidReport,
@@ -26,8 +26,8 @@ from plasmid_verification.domain.model import (
 )
 from plasmid_verification.domain.service import (
     PlasmidReportBuilder,
-    SequenceAlignmentService,
     SampleTrimmingService,
+    SequenceAlignmentService,
 )
 
 

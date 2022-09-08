@@ -35,6 +35,7 @@ from ..model import (
 from .sample_trimming_service import SampleTrimmingService
 from .sequence_alignment_service import SequenceAlignmentService
 
+
 logger = logging.getLogger(__name__)
 
 

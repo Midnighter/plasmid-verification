@@ -24,13 +24,13 @@ import numpy as np
 from ..model import (
     Conflict,
     ConflictReliability,
+    ConflictStatus,
+    ConflictType,
     Plasmid,
     PlasmidReport,
     Sample,
     SampleReport,
-    ConflictStatus,
     StrandDirection,
-    ConflictType,
 )
 from .sample_report_builder import SampleReportBuilder
 from .sample_trimming_service import SampleTrimmingService

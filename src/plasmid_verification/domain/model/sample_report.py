@@ -114,7 +114,7 @@ class SampleReport:
         warnings: Iterable[str] = (),
         trim_kwargs: Optional[dict] = None,
         alignment_kwargs: Optional[dict] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """"""
         super().__init__(**kwargs)
