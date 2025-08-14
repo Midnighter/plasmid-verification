@@ -1,0 +1,19 @@
+import "./veriplas_domain.cml"
+import "./plasmid_verification_context.cml"
+
+ContextMap VeriPlas {
+    type SYSTEM_LANDSCAPE
+    state TO_BE
+    contains PlasmidVerificationContext
+    contains ScikitBioContext
+    contains BioPythonContext
+
+    ScikitBioContext [U]->[D, ACL] PlasmidVerificationContext {
+        implementationTechnology = "Python"
+    }
+
+    BioPythonContext [U]->[D, CF] PlasmidVerificationContext {
+        implementationTechnology = "Python"
+    }
+}
+

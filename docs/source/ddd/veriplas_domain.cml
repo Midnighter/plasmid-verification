@@ -1,0 +1,21 @@
+Domain VeriPlas {
+    Subdomain PlasmidVerification supports PlasmidSequenceVerification {
+        type CORE_DOMAIN
+    }
+
+    Subdomain ScikitBio supports PlasmidSequenceVerification {
+        type GENERIC_SUBDOMAIN
+    }
+
+    Subdomain BioPython supports PlasmidSequenceVerification {
+        type GENERIC_SUBDOMAIN
+    }
+
+}
+
+UserStory PlasmidSequenceVerification {
+    As a "GeneticEngineer"
+    I want to "verify" a "Plasmid" with its "sequence"
+    so that "I can ensure that I built a construct according to my template."
+}
+

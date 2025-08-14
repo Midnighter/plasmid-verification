@@ -1,0 +1,68 @@
+import "./veriplas_domain.cml"
+
+BoundedContext ScikitBioContext implements ScikitBio {
+    type APPLICATION
+}
+
+BoundedContext BioPythonContext implements BioPython {
+    type APPLICATION
+}
+
+BoundedContext PlasmidVerificationContext implements PlasmidVerification {
+    type SYSTEM
+    domainVisionStatement ""
+    knowledgeLevel CONCRETE
+    implementationTechnology "Python"
+    Module model {
+        basePackage = plasmid_verification.domain
+        Aggregate PlasmidReport {
+            Entity Plasmid {
+                aggregateRoot
+                str identifier;
+                str name;
+                - Sequence sequence;
+                - List<Feature> features_;
+                def verify(@Sample sample, @Feature primer);
+                Repository PlasmidRepository {
+                    add(@Plasmid plasmid);
+                    @Plasmid find(str identifier);
+                }
+            }
+            ValueObject PlasmidReport {
+                - Plasmid plasmid;
+                - List<Sample> samples;
+                List<str> warnings;
+                List<str> errors;
+            }
+            ValueObject Feature {
+            }
+            ValueObject Sample {
+                str identifier;
+                - Sequence sequence;
+                List<int> phred_quality;
+            }
+            ValueObject Sequence {
+            }
+            ValueObject SequenceAlignment {
+                - Sequence query_;
+                - Sequence target;
+            }
+        }
+        Service SequenceAlignmentService {
+            @SequenceAlignment align(@Sequence query_, @Sequence target);
+        }
+        Service SequenceTrimmingService {
+            @Sequence trim(@Sequence sequence);
+        }
+    }
+    Module service {
+        basePackage = plasmid_verification.infrastructure
+        Service ScikitBioSequenceAlignmentService {
+            @SequenceAlignment align(@Sequence query_, @Sequence target);
+        }
+        Service BioPythonSequenceTrimmingService {
+            @Sequence trim(@Sequence sequence);
+        }
+    }
+}
+
