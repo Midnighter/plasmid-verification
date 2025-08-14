@@ -88,7 +88,9 @@ class Conflict:
         self.num_invalidated += 1
 
     def evaluate_status(self) -> None:
+        # TODO: call unresolved point mutation or SNP
         if self.num_confirmed > 0 and self.num_invalidated == 0:
+            # TODO: Also include single read conflicts of high quality
             self.status = ConflictStatus.UNRESOLVED
         elif self.num_confirmed == 0 and self.num_invalidated > 0:
             self.status = ConflictStatus.RESOLVED
